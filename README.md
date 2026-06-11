@@ -1,187 +1,114 @@
-[Crunchbase Scraper](https://apify.com/magicfingers/crunchbase-scraper?fpr=data)
+[Crunchbase Scraper](https://apify.com/alizarin_refrigerator-owner/crunchbase-scraper?fpr=data)
 
-Scrape Crunchbase company profiles, funding rounds, founders/executives, and investor data without a Crunchbase Pro subscription.
+# Crunchbase Company Scraper
 
-## What data can you extract?
+Scrape company profiles from Crunchbase. Extract funding data, investors, employees, founders, and company details. Perfect for investor research, lead generation, and market analysis. Built by John Rippy ([https://www.linkedin.com/in/johnrippy/](https://www.linkedin.com/in/johnrippy/) | [https://johnrippy.link/](https://johnrippy.link/)).
 
-### Organization profiles
+**BYOK (Bring Your Own Key)** -- you provide your own API credentials.
 
-- Name, description, founded date, headquarters location
-- Employee count range, operating status, website
-- Social links (LinkedIn, Twitter, Facebook)
-- Industry categories and category groups
-- Total funding raised, last funding type and date
-- IPO status, stock symbol, revenue range
-- Crunchbase rank
+---
 
-### Funding rounds
+## Before You Start
 
-- Announced date, funding type (Seed, Series A, etc.)
-- Money raised (USD), pre-money valuation
-- Lead investors with names and Crunchbase links
-- All investors for each round
-- Number of investors
+This actor requires your own API credentials to fetch real data.
 
-### People (founders and executives)
+**Where to get your key:** JSON array of cookies from Cookie-Editor. Helps bypass Crunchbase paywalls and login gates.
 
-- Name, title, current organization
-- LinkedIn and Twitter profiles
-- Crunchbase profile URL
-- Employment history
+You can test with **Demo Mode** first (free, no key needed) to see the output format before committing.
 
-### Investor profiles
+---
 
-- Name, type, location, description
-- Number of investments, exits, and funds
-- Lead investments count
-- Portfolio companies list
-- Website and social links
+## Quick Start
 
-## How to use
-
-### Search companies by keyword
+### Test with Demo Mode (free, no API key needed)
 
 ```
 {
-    "action": "searchCompanies",
-    "searchQuery": "artificial intelligence",
-    "maxResults": 50,
-    "includeFunding": true,
-    "includePeople": true
+  "demoMode": true,
+  "searchQuery": "AI startup"
 }
 ```
 
-### Search with filters
+### Run with real data
 
 ```
 {
-    "action": "searchCompanies",
-    "searchQuery": "fintech",
-    "location": "San Francisco",
-    "industryFilter": "Financial Services",
-    "fundingStage": "series_a",
-    "maxResults": 100
+  "demoMode": false,
+  "searchQuery": "AI startup",
+  "maxResults": 50,
+  "includeFundingRounds": false,
+  "sessionCookies": "YOUR_API_KEY_HERE",
+  "webhookPlatform": "custom",
+  "cookieKvStoreName": "cookie-sessions"
 }
 ```
 
-### Scrape specific company profiles
+---
 
-```
-{
-    "action": "scrapeProfiles",
-    "directUrls": [
-        "https://www.crunchbase.com/organization/openai",
-        "https://www.crunchbase.com/organization/stripe",
-        "https://www.crunchbase.com/organization/anthropic"
-    ],
-    "includeFunding": true,
-    "includePeople": true
-}
-```
+## Input Parameters
 
-### Scrape investor profiles
+| Parameter | Type | Default | Required | Description |
+| --- | --- | --- | --- | --- |
+| `demoMode` | boolean | `true` | No | Run with sample data without making API calls. Great for testing the actor. |
+| `searchQuery` | string | - | No | Company name or search term (e.g., 'Stripe', 'AI startup', 'SaaS'). |
+| `category` | string | - | No | Filter by industry. |
+| `location` | string | - | No | Filter by headquarters location (e.g., 'San Francisco', 'New York'). |
+| `fundingStage` | string | - | No | Filter by last funding stage. |
+| `minFunding` | string | - | No | Minimum total funding (e.g., '$1M', '$10M', '$100M'). |
+| `maxResults` | integer | `50` | No | Maximum number of companies to scrape. |
+| `includeFundingRounds` | boolean | `false` | No | Include detailed funding round history (slower but more data). |
+| `sessionCookies` | string | - | Yes* | JSON array of cookies from Cookie-Editor. Helps bypass Crunchbase paywalls and login gates. |
+| `webhookUrl` | string | - | No | URL to POST results when scraping completes (Zapier, Make, n8n, custom endpoint) |
+| `webhookPlatform` | string | `"custom"` | No | Platform type for webhook formatting |
+| `webhookHeaders` | object | - | No | Custom HTTP headers to send with webhook (JSON object) |
+| `cookieStorageKey` | string | - | No | Key name to load cookies from the Cookie Manager KV store. If set and no manual sessionCookies are provided, the actor loads cookies from the named KV store automatically. Use this with the Cookie Manager actor for automated cookie rotation. |
+| `cookieKvStoreName` | string | `"cookie-sessions"` | No | Name of the Apify Key-Value store where Cookie Manager saves cookies. Defaults to 'cookie-sessions' if not set. |
 
-```
-{
-    "action": "scrapeInvestors",
-    "directUrls": [
-        "https://www.crunchbase.com/organization/sequoia-capital",
-        "https://www.crunchbase.com/organization/andreessen-horowitz"
-    ]
-}
-```
+*Required when Demo Mode is off.
 
-### Scrape people profiles
-
-```
-{
-    "action": "scrapePeople",
-    "directUrls": [
-        "https://www.crunchbase.com/person/sam-altman",
-        "https://www.crunchbase.com/person/elon-musk"
-    ]
-}
-```
-
-## Input parameters
-
-| Parameter | Type | Default | Description |
-| --- | --- | --- | --- |
-| `action` | string | `searchCompanies` | What to scrape: `searchCompanies`, `scrapeProfiles`, `scrapeInvestors`, `scrapePeople` |
-| `searchQuery` | string |  | Keyword to search for |
-| `location` | string |  | Filter by HQ location |
-| `industryFilter` | string |  | Filter by industry category |
-| `fundingStage` | string |  | Filter by last funding stage (seed, series_a, etc.) |
-| `directUrls` | array | `[]` | Crunchbase URLs to scrape directly |
-| `maxResults` | integer | `100` | Max results (0 = unlimited) |
-| `includeFunding` | boolean | `true` | Include funding rounds for profiles |
-| `includePeople` | boolean | `true` | Include founders/executives for profiles |
-| `includeInvestors` | boolean | `false` | Include detailed investor info |
-| `maxConcurrency` | integer | `3` | Parallel pages (lower = safer) |
-| `requestTimeout` | integer | `90` | Page load timeout in seconds |
-| `proxyConfiguration` | object | Residential | Proxy settings (residential recommended) |
-
-## Output format
-
-Each item in the dataset is a JSON object with a `type` field (`organization`, `investor`, `person`, or `searchResult`).
-
-### Organization example
-
-```
-{
-    "type": "organization",
-    "name": "OpenAI",
-    "shortDescription": "OpenAI is an AI research and deployment company.",
-    "foundedDate": "2015-12-11",
-    "headquartersLocation": "San Francisco, California, United States",
-    "website": "https://openai.com",
-    "employeeCount": "1001-5000",
-    "totalFunding": "$11,300.0M",
-    "totalFundingUsd": 11300000000,
-    "lastFundingType": "Series Unknown",
-    "operatingStatus": "Active",
-    "industries": ["Artificial Intelligence", "Machine Learning"],
-    "linkedin": "https://www.linkedin.com/company/openai",
-    "twitter": "https://twitter.com/OpenAI",
-    "fundingRounds": [
-        {
-            "announcedDate": "2023-04-28",
-            "fundingType": "Series Unknown",
-            "moneyRaised": 10000000000,
-            "leadInvestors": [{ "name": "Microsoft" }],
-            "numInvestors": 1
-        }
-    ],
-    "people": [
-        {
-            "name": "Sam Altman",
-            "title": "CEO",
-            "linkedin": "https://linkedin.com/in/samaltman"
-        }
-    ],
-    "crunchbaseUrl": "https://www.crunchbase.com/organization/openai",
-    "scrapedAt": "2024-01-15T10:30:00.000Z"
-}
-```
+---
 
 ## Pricing
 
-This actor uses pay-per-event pricing: **$2.00 per 1,000 results** ($0.002 per result).
+This actor uses **pay-per-event** billing:
 
-Each saved item (organization profile, investor profile, person profile, or search result) counts as one result.
+| Event | Description | Price |
+| --- | --- | --- |
+| Company Scraped | Each company profile scraped from Crunchbase | $0.08 |
 
-## Tips for best results
+**Demo mode is free** -- no charges for sample data.
 
-1. **Use residential proxies** — Crunchbase has strong anti-bot detection. Residential proxies are strongly recommended.
-2. **Keep concurrency low** — 2-3 concurrent pages reduces blocking risk significantly.
-3. **Start with direct URLs** — Scraping specific profile URLs is more reliable than search-based scraping.
-4. **Use reasonable limits** — Start with smaller `maxResults` to verify output before large runs.
+---
 
-## Technical details
+## Troubleshooting
 
-- Built with Apify SDK v3 and Crawlee PlaywrightCrawler
-- Uses response interception to capture Crunchbase's internal API data
-- Falls back to DOM extraction when API data is not available
-- Extracts JSON-LD and **NEXT_DATA** structured data
-- Includes stealth measures (navigator overrides, random delays, human-like scrolling)
-- Automatic session rotation and retry logic
+### "API key is required"
+
+You have Demo Mode turned **off** but didn't provide an API key. Either:
+
+- Turn Demo Mode **on** to test with sample data
+- Add your API key in the input
+
+### "API error 403" or "Unauthorized"
+
+Your API key is invalid, expired, or doesn't have access to this specific API endpoint. Double-check your key and account permissions.
+
+### "API error 429" or "Rate limit"
+
+Too many requests. Wait a minute and try again, or reduce the number of items per run.
+
+### No results or empty dataset
+
+Check the run log for error messages. Common causes:
+
+- Invalid input format (check the examples above)
+- API key without proper permissions
+- The target data doesn't exist or is too small to track
+
+### How do I test without an API key?
+
+Enable **Demo Mode** in the input. This returns realistic sample data so you can verify the output format works for your workflow.
+
+---
+
+**Built by John Rippy | [Actor Arsenal](https://actorarsenal.com)**
